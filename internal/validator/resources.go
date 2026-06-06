@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/justcodeit404/mcpkit/internal/mcp"
@@ -19,7 +20,7 @@ func (s *Spec) runResourceChecks(ctx context.Context, client *mcp.Client, r *Res
 		return
 	}
 	r.record("RL-001", "resources/list returns valid response", "pass",
-		"server returned "+itoa(len(resources))+" resources", time.Since(start))
+		"server returned "+strconv.Itoa(len(resources))+" resources", time.Since(start))
 
 	if s.resourceFilter == "" {
 		r.record("RR-001", "resources/read returns content", "skip",

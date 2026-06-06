@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/justcodeit404/mcpkit/internal/mcp"
@@ -21,7 +22,7 @@ func (s *Spec) runPromptChecks(ctx context.Context, client *mcp.Client, opts Run
 		return
 	}
 	r.record("PL-001", "prompts/list returns valid response", "pass",
-		"server returned "+itoa(len(prompts))+" prompts", time.Since(start))
+		"server returned "+strconv.Itoa(len(prompts))+" prompts", time.Since(start))
 
 	if s.promptFilter == "" {
 		r.record("PG-001", "prompts/get returns messages", "skip",

@@ -29,8 +29,6 @@ The MCP ecosystem has 16,000+ servers and 150M+ SDK downloads — but no Go-nati
 
 ```bash
 # Install
-brew install mcpkit
-# or
 go install github.com/justcodeit404/mcpkit/cmd/mcpkit@latest
 
 # Probe interactively
@@ -76,17 +74,15 @@ mcpkit bench --command "./my-server" --method ping -n 1000
 ## 📦 Installation
 
 ```bash
-# Homebrew (macOS/Linux)
-brew install mcpkit
-
-# Go install
+# Go install (requires Go 1.23+)
 go install github.com/justcodeit404/mcpkit/cmd/mcpkit@latest
 
 # Direct binary download
 # See https://github.com/justcodeit404/mcpkit/releases/latest
 
-# Docker
-docker run --rm -it ghcr.io/justcodeit404/mcpkit --help
+# macOS / Linux
+curl -fsSL https://github.com/justcodeit404/mcpkit/releases/latest/download/mcpkit_0.1.0_linux_amd64.tar.gz | tar xz
+sudo mv mcpkit /usr/local/bin/
 ```
 
 ## 🎯 Why mcpkit Wins

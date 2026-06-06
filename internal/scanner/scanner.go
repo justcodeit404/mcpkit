@@ -143,7 +143,7 @@ func (e *Engine) shouldRun(r Rule) bool {
 	if len(e.opts.Include) > 0 && !slices.Contains(e.opts.Include, r.ID()) {
 		return false
 	}
-	if len(e.opts.Exclude) > 0 && !slices.Contains(e.opts.Exclude, r.ID()) {
+	if len(e.opts.Exclude) > 0 && slices.Contains(e.opts.Exclude, r.ID()) {
 		return false
 	}
 	return int(r.Severity()) <= e.opts.MinTier

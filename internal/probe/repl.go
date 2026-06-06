@@ -167,6 +167,14 @@ func (r *REPL) dispatch(ctx context.Context, line string) error {
 	return nil
 }
 
+// prettyPrint writes v as indented JSON to the REPL output.
+func (r *REPL) prettyPrint(v any) error {
+	enc := json.NewEncoder(r.writer)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	return enc.Encode(v)
+}
+
 func (r *REPL) printHelp() {
 	help := []struct{ cmd, desc string }{
 		{"list <kind>", "List tools | resources | prompts | all"},
@@ -284,10 +292,7 @@ func (r *REPL) cmdTool(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	enc := json.NewEncoder(r.writer)
-	enc.SetIndent("", "  ")
-	enc.SetEscapeHTML(false)
-	return enc.Encode(res)
+	return r.prettyPrint(res)
 }
 
 func (r *REPL) cmdRead(ctx context.Context, args []string) error {
@@ -298,10 +303,7 @@ func (r *REPL) cmdRead(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	enc := json.NewEncoder(r.writer)
-	enc.SetIndent("", "  ")
-	enc.SetEscapeHTML(false)
-	return enc.Encode(res)
+	return r.prettyPrint(res)
 }
 
 func (r *REPL) cmdPrompt(ctx context.Context, args []string) error {
@@ -320,19 +322,14 @@ func (r *REPL) cmdPrompt(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	enc := json.NewEncoder(r.writer)
-	enc.SetIndent("", "  ")
-	enc.SetEscapeHTML(false)
-	return enc.Encode(res)
+	return r.prettyPrint(res)
 }
 
 func (r *REPL) cmdInfo() error {
 	if r.snapshot == nil {
 		return fmt.Errorf("no snapshot available")
 	}
-	enc := json.NewEncoder(r.writer)
-	enc.SetIndent("", "  ")
-	return enc.Encode(r.snapshot.ServerInfo)
+	return r.prettyPrint(r.snapshot.ServerInfo)
 }
 
 func (r *REPL) cmdPing(ctx context.Context) error {

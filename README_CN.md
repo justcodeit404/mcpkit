@@ -75,19 +75,15 @@ mcpkit bench --command "./my-server" --method ping -n 1000
 ## 📦 安装
 
 ```bash
-# Go install
+# Go install (需要 Go 1.23+)
 go install github.com/justcodeit404/mcpkit/cmd/mcpkit@latest
 
 # 直接下载二进制
 # 见 https://github.com/justcodeit404/mcpkit/releases/latest
 
 # macOS / Linux
-curl -fsSL https://github.com/justcodeit404/mcpkit/releases/latest/download/mcpkit_0.1.0_linux_amd64.tar.gz | tar xz
+curl -fsSL https://github.com/justcodeit404/mcpkit/releases/latest/download/mcpkit_linux_amd64.tar.gz | tar xz
 sudo mv mcpkit /usr/local/bin/
-
-# Windows (PowerShell)
-Invoke-WebRequest -Uri "https://github.com/justcodeit404/mcpkit/releases/latest/download/mcpkit_0.1.0_windows_amd64.tar.gz" -OutFile mcpkit.tar.gz
-tar xf mcpkit.tar.gz
 ```
 
 ## 🎯 mcpkit 的优势

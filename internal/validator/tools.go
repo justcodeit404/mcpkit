@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,7 +26,7 @@ func (s *Spec) runToolChecks(ctx context.Context, client *mcp.Client, opts RunOp
 		return
 	}
 	r.record("TL-001", "tools/list returns valid response", "pass",
-		"server returned "+itoa(len(tools))+" tools", time.Since(start))
+		"server returned "+strconv.Itoa(len(tools))+" tools", time.Since(start))
 
 	// Validate each tool.
 	for _, t := range tools {
@@ -132,26 +133,4 @@ func skipName(id string) string {
 		return "Type validation"
 	}
 	return id
-}
-
-func itoa(i int) string {
-	if i == 0 {
-		return "0"
-	}
-	neg := i < 0
-	if neg {
-		i = -i
-	}
-	var buf [20]byte
-	pos := len(buf)
-	for i > 0 {
-		pos--
-		buf[pos] = byte('0' + i%10)
-		i /= 10
-	}
-	if neg {
-		pos--
-		buf[pos] = '-'
-	}
-	return string(buf[pos:])
 }

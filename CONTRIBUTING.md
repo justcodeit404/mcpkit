@@ -39,8 +39,8 @@ mcpkit/
 
 ## Adding a New Security Rule
 
-1. Add your rule struct in `internal/scanner/rules_tier{N}_*.go`
-2. Implement the `Rule` interface (ID, Name, Severity, Description, Remediation, Check)
+1. Add your rule struct in `internal/scanner/rules.go`
+2. Embed `BaseRule` and implement only `Check(snap *Snapshot) []Finding`
 3. Register it in `internal/scanner/scanner.go` `New()` function
 4. Add a unit test in `internal/scanner/rules_test.go`
 5. Update the README to list the new rule

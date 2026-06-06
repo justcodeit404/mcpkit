@@ -4,9 +4,9 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 LDFLAGS := -s -w \
-  -X github.com/mcpkit-dev/mcpkit/internal/cli.Version=$(VERSION) \
-  -X github.com/mcpkit-dev/mcpkit/internal/cli.Commit=$(COMMIT) \
-  -X github.com/mcpkit-dev/mcpkit/internal/cli.BuildDate=$(BUILD_DATE)
+  -X github.com/justcodeit404/mcpkit/internal/cli.Version=$(VERSION) \
+  -X github.com/justcodeit404/mcpkit/internal/cli.Commit=$(COMMIT) \
+  -X github.com/justcodeit404/mcpkit/internal/cli.BuildDate=$(BUILD_DATE)
 
 .PHONY: build install test lint format clean release-snapshot
 
