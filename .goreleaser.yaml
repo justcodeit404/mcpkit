@@ -31,7 +31,7 @@ archives:
   - id: default
     formats:
       - tar.gz
-    name_template: "{{ .BinaryName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
