@@ -1,0 +1,11 @@
+bin/
+dist/
+*.exe
+*.test
+*.out
+coverage.txt
+.idea/
+.vscode/
+.DS_Store
+*.log
+mcpkit_crashes/

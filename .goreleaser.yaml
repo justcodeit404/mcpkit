@@ -1,0 +1,74 @@
+version: 2
+
+project_name: mcpkit
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: mcpkit
+    main: ./cmd/mcpkit
+    binary: mcpkit
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/justcodeit404/mcpkit/internal/cli.Version={{.Version}}
+      - -X github.com/justcodeit404/mcpkit/internal/cli.Commit={{.ShortCommit}}
+      - -X github.com/justcodeit404/mcpkit/internal/cli.BuildDate={{.Date}}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: "{{ .BinaryName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+nfpms:
+  - id: packages
+    package_name: mcpkit
+    file_name_template: "{{ .ConventionalFileName }}"
+    formats:
+      - deb
+      - rpm
+      - apk
+    maintainer: mcpkit <hello@mcpkit.dev>
+    description: The Swiss Army knife for MCP development
+    license: MIT
+    section: utils
+    priority: optional
+
+brews:
+  - tap:
+      owner: justcodeit404
+      name: homebrew-tap
+    homepage: https://github.com/justcodeit404/mcpkit
+    description: The Swiss Army knife for MCP development
+    license: MIT
+    dependencies:
+      - name: git
+
+release:
+  github:
+    owner: justcodeit404
+    name: mcpkit
+  prerelease: auto
+  draft: false
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
