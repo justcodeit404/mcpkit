@@ -95,8 +95,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 
 	// Determine exit code based on --fail-on.
 	if failOn != "never" && results.ShouldFail(failOn) {
-		client.Disconnect()
-		os.Exit(1)
+		return ErrFindingsDetected
 	}
 	return nil
 }
