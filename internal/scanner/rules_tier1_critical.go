@@ -5,24 +5,9 @@ import (
 	"strings"
 )
 
-// baseRule provides common fields for rules.
-type baseRule struct {
-	id          string
-	name        string
-	severity    Severity
-	description string
-	remediation string
-}
-
-func (b *baseRule) ID() string          { return b.id }
-func (b *baseRule) Name() string        { return b.name }
-func (b *baseRule) Severity() Severity  { return b.severity }
-func (b *baseRule) Description() string { return b.description }
-func (b *baseRule) Remediation() string { return b.remediation }
-
 // R101: Command Injection — tool names or descriptions reference shell
 // primitives alongside user-controlled input channels.
-type CommandInjectionRule struct{ baseRule }
+type CommandInjectionRule struct{}
 
 func (r *CommandInjectionRule) ID() string   { return "R101" }
 func (r *CommandInjectionRule) Name() string { return "Command Injection" }
@@ -59,7 +44,7 @@ func (r *CommandInjectionRule) Check(snap *Snapshot) []Finding {
 
 // R102: System Prompt Override — parameter named system_prompt/instructions
 // that could override agent behavior.
-type SystemPromptOverrideRule struct{ baseRule }
+type SystemPromptOverrideRule struct{}
 
 func (r *SystemPromptOverrideRule) ID() string   { return "R102" }
 func (r *SystemPromptOverrideRule) Name() string { return "System Prompt Override" }
@@ -106,7 +91,7 @@ func (r *SystemPromptOverrideRule) Check(snap *Snapshot) []Finding {
 
 // R103: Credential Exfiltration — tool that accepts URLs and a name suggesting
 // sensitive data flow.
-type CredentialExfilRule struct{ baseRule }
+type CredentialExfilRule struct{}
 
 func (r *CredentialExfilRule) ID() string   { return "R103" }
 func (r *CredentialExfilRule) Name() string { return "Credential Exfiltration" }
@@ -142,7 +127,7 @@ func (r *CredentialExfilRule) Check(snap *Snapshot) []Finding {
 }
 
 // R104: Shell Metacharacters in Defaults.
-type ShellMetacharDefaultsRule struct{ baseRule }
+type ShellMetacharDefaultsRule struct{}
 
 func (r *ShellMetacharDefaultsRule) ID() string   { return "R104" }
 func (r *ShellMetacharDefaultsRule) Name() string { return "Shell Metacharacters in Defaults" }
@@ -183,7 +168,7 @@ func (r *ShellMetacharDefaultsRule) Check(snap *Snapshot) []Finding {
 
 // R105: Unsanitized Code Execution — tool descriptions reference eval/exec
 // without a sanitization hint.
-type UnsanitizedExecRule struct{ baseRule }
+type UnsanitizedExecRule struct{}
 
 func (r *UnsanitizedExecRule) ID() string   { return "R105" }
 func (r *UnsanitizedExecRule) Name() string { return "Unsanitized Code Execution" }

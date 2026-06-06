@@ -39,14 +39,6 @@ func bindSharedFlags(cmd *cobra.Command) sharedFlags {
 	}
 }
 
-// transport flags helpers — commonly added to connection-oriented subcommands.
-func addTransportFlags(flags *pflag.FlagSet) {
-	flags.String("transport", "stdio", "Transport type: stdio|sse|streamable-http")
-	flags.String("command", "", "Command to launch MCP server (for stdio transport)")
-	flags.String("url", "", "Server endpoint URL (for HTTP transports)")
-	flags.StringSliceP("header", "H", nil, "Custom HTTP headers in key:value format (repeatable)")
-}
-
 func getString(flags *pflag.FlagSet, name string) string {
 	v, _ := flags.GetString(name)
 	return v
@@ -64,10 +56,5 @@ func getStringSlice(flags *pflag.FlagSet, name string) []string {
 
 func getInt(flags *pflag.FlagSet, name string) int {
 	v, _ := flags.GetInt(name)
-	return v
-}
-
-func getDuration(flags *pflag.FlagSet, name string) string {
-	v, _ := flags.GetString(name)
 	return v
 }

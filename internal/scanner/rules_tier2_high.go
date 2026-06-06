@@ -1,13 +1,12 @@
 package scanner
 
 import (
-	"encoding/base64"
 	"regexp"
 	"strings"
 )
 
 // R201: Imperative Language — descriptions that pressure the agent.
-type ImperativeLanguageRule struct{ baseRule }
+type ImperativeLanguageRule struct{}
 
 func (r *ImperativeLanguageRule) ID() string   { return "R201" }
 func (r *ImperativeLanguageRule) Name() string { return "Imperative Language in Description" }
@@ -42,7 +41,7 @@ func (r *ImperativeLanguageRule) Check(snap *Snapshot) []Finding {
 }
 
 // R202: Tool Name Shadowing — names that collide with common system commands.
-type ToolNameShadowingRule struct{ baseRule }
+type ToolNameShadowingRule struct{}
 
 func (r *ToolNameShadowingRule) ID() string   { return "R202" }
 func (r *ToolNameShadowingRule) Name() string { return "Tool Name Shadowing" }
@@ -82,7 +81,7 @@ func (r *ToolNameShadowingRule) Check(snap *Snapshot) []Finding {
 
 // R203: Base64/Encoded Payloads — parameter description hints at base64
 // with no max size.
-type Base64PayloadRule struct{ baseRule }
+type Base64PayloadRule struct{}
 
 func (r *Base64PayloadRule) ID() string   { return "R203" }
 func (r *Base64PayloadRule) Name() string { return "Base64/Encoded Payload Parameter" }
@@ -118,7 +117,7 @@ func (r *Base64PayloadRule) Check(snap *Snapshot) []Finding {
 }
 
 // R204: Missing Input Validation — string/number parameters lack constraints.
-type MissingInputValidationRule struct{ baseRule }
+type MissingInputValidationRule struct{}
 
 func (r *MissingInputValidationRule) ID() string   { return "R204" }
 func (r *MissingInputValidationRule) Name() string { return "Missing Input Validation" }
@@ -156,7 +155,7 @@ func (r *MissingInputValidationRule) Check(snap *Snapshot) []Finding {
 }
 
 // R205: Broad File System Access — tool reads/writes arbitrary paths.
-type BroadFileSystemAccessRule struct{ baseRule }
+type BroadFileSystemAccessRule struct{}
 
 func (r *BroadFileSystemAccessRule) ID() string   { return "R205" }
 func (r *BroadFileSystemAccessRule) Name() string { return "Broad File System Access" }
@@ -189,13 +188,4 @@ func (r *BroadFileSystemAccessRule) Check(snap *Snapshot) []Finding {
 		}
 	}
 	return findings
-}
-
-// base64Decoder is a small helper used by some rules.
-func base64Decoder(s string) (string, bool) {
-	decoded, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		return "", false
-	}
-	return string(decoded), true
 }
