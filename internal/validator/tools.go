@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/justcodeit404/mcpkit/internal/mcp"
-	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // runToolChecks verifies tools/list and tools/call behavior.
@@ -29,8 +28,6 @@ func (s *Spec) runToolChecks(ctx context.Context, client *mcp.Client, opts RunOp
 		"server returned "+itoa(len(tools))+" tools", time.Since(start))
 
 	// Validate each tool.
-	invalidNames := 0
-	missingDescs := 0
 	for _, t := range tools {
 		if s.toolFilter != "" && t.Name != s.toolFilter {
 			continue
@@ -40,7 +37,6 @@ func (s *Spec) runToolChecks(ctx context.Context, client *mcp.Client, opts RunOp
 		if !toolNamePattern.MatchString(t.Name) {
 			r.record("TL-002", "Tool name format", "fail",
 				"invalid name: "+t.Name, time.Since(start))
-			invalidNames++
 		} else {
 			r.record("TL-002", "Tool name format", "pass",
 				"name conforms to spec", time.Since(start))
@@ -50,7 +46,6 @@ func (s *Spec) runToolChecks(ctx context.Context, client *mcp.Client, opts RunOp
 		if strings.TrimSpace(t.Description) == "" {
 			r.record("TL-003", "Tool has description", "fail",
 				"empty description: "+t.Name, time.Since(start))
-			missingDescs++
 		} else {
 			r.record("TL-003", "Tool has description", "pass",
 				"description provided", time.Since(start))
@@ -117,11 +112,6 @@ func (s *Spec) runToolChecks(ctx context.Context, client *mcp.Client, opts RunOp
 				"server accepted unknown arg (lenient schema)", time.Since(start))
 		}
 	}
-
-	// Emit summary records for tooling.
-	_ = invalidNames
-	_ = missingDescs
-	_ = mcpsdk.Tool{}
 }
 
 func skipName(id string) string {

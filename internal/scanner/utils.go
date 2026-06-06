@@ -2,9 +2,21 @@ package scanner
 
 import "fmt"
 
-// fmtSprintf is a thin wrapper to keep `fmt` import in one place.
-// This lets us consolidate formatting logic and avoid import cycles
-// when stringer() is called from multiple rule files.
-func fmtSprintf(format string, args ...any) string {
-	return fmt.Sprintf(format, args...)
+// stringer renders a struct as a JSON-ish string for regex scanning.
+func stringer(v any) string {
+	if v == nil {
+		return ""
+	}
+	if s, ok := v.(string); ok {
+		return s
+	}
+	return fmt.Sprintf("%+v", v)
+}
+
+// truncate returns the first n bytes of s, adding "..." if truncated.
+func truncate(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "..."
 }

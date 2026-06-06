@@ -1,9 +1,6 @@
 package cli
 
 import (
-	"errors"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -14,16 +11,10 @@ var (
 	BuildDate = "unknown"
 )
 
-// ErrFindingsDetected is returned when security findings exceed the fail-on threshold.
-var ErrFindingsDetected = errors.New("security findings detected")
-
-// Execute runs the root command.
+// Execute runs the root command. Returns nil on success, or an error.
+// Exit code handling belongs in main(), not here.
 func Execute() error {
-	err := rootCmd.Execute()
-	if errors.Is(err, ErrFindingsDetected) {
-		os.Exit(1)
-	}
-	return err
+	return rootCmd.Execute()
 }
 
 var rootCmd = &cobra.Command{

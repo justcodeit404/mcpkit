@@ -95,7 +95,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 
 	// Determine exit code based on --fail-on.
 	if failOn != "never" && results.ShouldFail(failOn) {
-		return ErrFindingsDetected
+		return fmt.Errorf("security findings above %s threshold", failOn)
 	}
 	return nil
 }

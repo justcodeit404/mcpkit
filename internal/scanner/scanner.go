@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"context"
+	"slices"
 	"sort"
 
 	"github.com/justcodeit404/mcpkit/internal/mcp"
@@ -32,23 +33,48 @@ type Results struct {
 	summary  output.ScanSummary
 }
 
+// ruleMeta is a convenience constructor for BaseRule fields.
+func ruleMeta(id, name string, sev Severity, desc, remediation string) BaseRule {
+	return BaseRule{IDVal: id, NameVal: name, SeverityVal: sev, DescriptionVal: desc, RemediationVal: remediation}
+}
+
 // New constructs the scanner engine with all default rules.
 func New(opts Options) *Engine {
 	return &Engine{
 		opts: opts,
 		rules: []Rule{
 			// Tier 1 — CRITICAL
-			&CommandInjectionRule{},
-			&SystemPromptOverrideRule{},
-			&CredentialExfilRule{},
-			&ShellMetacharDefaultsRule{},
-			&UnsanitizedExecRule{},
+			&CommandInjectionRule{ruleMeta("R101", "Command Injection", SeverityCritical,
+				"Tool references shell primitives with user-controlled input paths",
+				"Avoid exec/system/shell tools that pass user input to a shell. Use parameterized APIs or strict input validation.")},
+			&SystemPromptOverrideRule{ruleMeta("R102", "System Prompt Override", SeverityCritical,
+				"Parameter accepts system_prompt/instructions and could hijack agent behavior",
+				"Do not expose system prompts as user-controllable parameters. Use a fixed internal prompt.")},
+			&CredentialExfilRule{ruleMeta("R103", "Credential Exfiltration", SeverityCritical,
+				"Tool accepts URLs/webhooks and may exfiltrate sensitive data",
+				"Disallow URL parameters in tools that also handle credentials. Use allowlisted endpoints.")},
+			&ShellMetacharDefaultsRule{ruleMeta("R104", "Shell Metacharacters in Defaults", SeverityCritical,
+				"Default values contain shell metacharacters that could enable injection",
+				"Sanitize default values. Avoid characters: ; | & $ ` \\n > < in default values.")},
+			&UnsanitizedExecRule{ruleMeta("R105", "Unsanitized Code Execution", SeverityCritical,
+				"Tool description references eval/exec without validation guidance",
+				"Wrap code execution in a sandbox. Validate input. Consider dropping eval-style tools entirely.")},
 			// Tier 2 — HIGH
-			&ImperativeLanguageRule{},
-			&ToolNameShadowingRule{},
-			&Base64PayloadRule{},
-			&MissingInputValidationRule{},
-			&BroadFileSystemAccessRule{},
+			&ImperativeLanguageRule{ruleMeta("R201", "Imperative Language in Description", SeverityHigh,
+				"Description contains social-engineering imperative language",
+				"Rewrite descriptions as factual. Avoid 'must', 'always execute', 'never refuse', etc.")},
+			&ToolNameShadowingRule{ruleMeta("R202", "Tool Name Shadowing", SeverityHigh,
+				"Tool name collides with common system commands",
+				"Use namespaced tool names (e.g. 'myserver_read_file' instead of 'read_file').")},
+			&Base64PayloadRule{ruleMeta("R203", "Base64/Encoded Payload Parameter", SeverityHigh,
+				"Parameter accepts base64-encoded content with no max size",
+				"Add maxLength constraint to encoded parameters. Consider rejecting encoded payloads entirely.")},
+			&MissingInputValidationRule{ruleMeta("R204", "Missing Input Validation", SeverityHigh,
+				"String/number parameters lack pattern/minLength/maxLength/min/maximum constraints",
+				"Add JSON Schema constraints (pattern, minLength, maxLength, minimum, maximum) to all parameters.")},
+			&BroadFileSystemAccessRule{ruleMeta("R205", "Broad File System Access", SeverityHigh,
+				"Tool reads/writes arbitrary filesystem paths without sandboxing",
+				"Restrict tools to a sandboxed root directory. Reject paths containing '..' or absolute paths outside the root.")},
 		},
 	}
 }
@@ -67,9 +93,13 @@ func (e *Engine) Run(ctx context.Context, client *mcp.Client) (*Results, error) 
 		if err != nil {
 			return nil, err
 		}
-		snap = snapshotFromMCP(s)
+		snap = &Snapshot{
+			ServerInfo: s.ServerInfo,
+			Tools:      s.Tools,
+			Resources:  s.Resources,
+			Prompts:    s.Prompts,
+		}
 	} else {
-		// Offline mode — no tools/resources/prompts available.
 		snap = &Snapshot{}
 	}
 
@@ -110,61 +140,27 @@ func (e *Engine) Run(ctx context.Context, client *mcp.Client) (*Results, error) 
 }
 
 func (e *Engine) shouldRun(r Rule) bool {
-	if len(e.opts.Include) > 0 && !contains(e.opts.Include, r.ID()) {
+	if len(e.opts.Include) > 0 && !slices.Contains(e.opts.Include, r.ID()) {
 		return false
 	}
-	if len(e.opts.Exclude) > 0 && contains(e.opts.Exclude, r.ID()) {
+	if len(e.opts.Exclude) > 0 && !slices.Contains(e.opts.Exclude, r.ID()) {
 		return false
 	}
 	return int(r.Severity()) <= e.opts.MinTier
 }
 
-func contains(s []string, v string) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
-}
-
-func snapshotFromMCP(s *mcp.Snapshot) *Snapshot {
-	return &Snapshot{
-		ServerInfo: s.ServerInfo,
-		Tools:      s.Tools,
-		Resources:  s.Resources,
-		Prompts:    s.Prompts,
-	}
-}
-
 // ShouldFail returns true if findings exceed the fail-on threshold.
 func (r *Results) ShouldFail(failOn string) bool {
-	threshold := severityFromName(failOn)
+	threshold := SeverityFromName(failOn)
 	if threshold == 0 {
 		return false
 	}
 	for _, f := range r.findings {
-		if int(f.Severity) <= threshold {
+		if f.Severity <= threshold {
 			return true
 		}
 	}
 	return false
-}
-
-func severityFromName(name string) int {
-	switch name {
-	case "critical":
-		return 1
-	case "high":
-		return 2
-	case "medium":
-		return 3
-	case "low":
-		return 4
-	case "info":
-		return 5
-	}
-	return 0
 }
 
 // Renderable converts findings to a list of FindingResult for the text formatter.

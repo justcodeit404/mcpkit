@@ -30,18 +30,16 @@ func Histogram(samples []time.Duration, edges []time.Duration) []Bucket {
 	if len(edges) == 0 {
 		edges = DefaultBuckets
 	}
-	sortEdges := make([]time.Duration, len(edges))
-	copy(sortEdges, edges)
 	// edges already monotonic ascending
-	buckets := make([]Bucket, len(sortEdges)+1)
-	for i, e := range sortEdges {
+	buckets := make([]Bucket, len(edges)+1)
+	for i, e := range edges {
 		if i == 0 {
 			buckets[i] = Bucket{From: 0, To: e}
 		} else {
-			buckets[i] = Bucket{From: sortEdges[i-1], To: e}
+			buckets[i] = Bucket{From: edges[i-1], To: e}
 		}
 	}
-	buckets[len(sortEdges)] = Bucket{From: sortEdges[len(sortEdges)-1], To: time.Duration(1 << 62)}
+	buckets[len(edges)] = Bucket{From: edges[len(edges)-1], To: time.Duration(1 << 62)}
 
 	for _, s := range samples {
 		for i := range buckets {
