@@ -3,6 +3,8 @@
 > **The Swiss Army knife for MCP development.**
 > Test, scan, bench, fuzz, and probe your MCP servers with a single, fast, zero-dependency binary.
 
+English | [中文](./README_CN.md)
+
 ```
 $ mcpkit scan --command "npx -y @modelcontextprotocol/server-filesystem /tmp"
 
