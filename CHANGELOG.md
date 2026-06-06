@@ -12,16 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `mcpkit probe` — interactive REPL for exploring MCP servers
 - `mcpkit test` — protocol compliance testing with 20 checks
-- `mcpkit scan` — security scanner with 10 rules across 2 tiers
-- `mcpkit bench` — performance benchmarking with percentile stats
+- `mcpkit scan` — security scanner with 21 rules across 5 tiers (CRITICAL/HIGH/MEDIUM/LOW/INFO)
+- `mcpkit bench` — performance benchmarking with percentile stats and concurrency support
 - Support for stdio and streamable-http transports
 - Beautiful terminal output via Charmbracelet lipgloss
 - JSON output for CI/CD integration
 - Cross-platform binaries (Linux, macOS, Windows on amd64/arm64)
-- Homebrew formula
+- Unit tests for benchmark, scanner, mcp, output, validator packages
+- `--version` flag with build-time version injection
+- Bench `--concurrency` flag for parallel benchmarking
 
 ### Notes
-- SSE transport deferred to v0.2.0
 - `mcpkit fuzz` deferred to v0.3.0
 - `mcpkit new` and `mcpkit validate` deferred to v0.2.0
-- Tier 3-5 security rules deferred to v0.3.0

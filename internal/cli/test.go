@@ -66,9 +66,9 @@ func runTest(cmd *cobra.Command, _ []string) error {
 		spec.SetPromptFilter(promptName)
 	}
 
-	var toolArgsMap map[string]any
-	if err := json.Unmarshal([]byte(toolArgs), &toolArgsMap); err != nil {
-		return fmt.Errorf("invalid --tool-args JSON: %w", err)
+	toolArgsMap, err := parseJSONArgs(toolArgs)
+	if err != nil {
+		return err
 	}
 	var promptArgsMap map[string]string
 	if err := json.Unmarshal([]byte(promptArgs), &promptArgsMap); err != nil {

@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +33,8 @@ secure MCP servers.`,
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("config", "c", "", "Path to mcp.json config file")
+	rootCmd.Version = fmt.Sprintf("%s (commit=%s, date=%s)", Version, Commit, BuildDate)
+
 	rootCmd.PersistentFlags().String("transport", "stdio", "Transport type: stdio|sse|streamable-http")
 	rootCmd.PersistentFlags().String("command", "", "Command to launch MCP server (stdio transport)")
 	rootCmd.PersistentFlags().String("url", "", "Server URL (HTTP transports)")
@@ -40,7 +44,7 @@ func init() {
 	rootCmd.PersistentFlags().Bool("no-color", false, "Disable colored output")
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Verbose output")
 	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Suppress non-error output")
-	rootCmd.PersistentFlags().Duration("timeout", 30_000_000_000, "Connection timeout") // 30s
+	rootCmd.PersistentFlags().Duration("timeout", 30*time.Second, "Connection timeout")
 	rootCmd.PersistentFlags().String("log-file", "", "Write debug log to file")
 
 	rootCmd.AddCommand(probeCmd)

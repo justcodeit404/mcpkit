@@ -50,7 +50,7 @@ mcpkit bench --command "./my-server" --method ping -n 1000
 |---------|-------------|
 | `mcpkit probe` | Interactive REPL for exploring MCP servers |
 | `mcpkit test` | Protocol compliance testing (20 checks) |
-| `mcpkit scan` | Security vulnerability scanning (10 rules, 2 tiers) |
+| `mcpkit scan` | Security vulnerability scanning (21 rules, 5 tiers) |
 | `mcpkit bench` | Performance benchmarking with percentile stats |
 | `mcpkit fuzz` | Protocol fuzzing (coming in v0.3.0) |
 | `mcpkit new` | Scaffold a new MCP server (coming in v0.2.0) |
@@ -81,7 +81,7 @@ go install github.com/justcodeit404/mcpkit/cmd/mcpkit@latest
 # See https://github.com/justcodeit404/mcpkit/releases/latest
 
 # macOS / Linux
-curl -fsSL https://github.com/justcodeit404/mcpkit/releases/latest/download/mcpkit_0.1.0_linux_amd64.tar.gz | tar xz
+curl -fsSL https://github.com/justcodeit404/mcpkit/releases/latest/download/mcpkit_linux_amd64.tar.gz | tar xz
 sudo mv mcpkit /usr/local/bin/
 ```
 
@@ -121,6 +121,26 @@ sudo mv mcpkit /usr/local/bin/
 - **R203** — Base64 Payloads: Encoded parameters with no max size
 - **R204** — Missing Input Validation: No JSON Schema constraints on parameters
 - **R205** — Broad File System Access: Arbitrary path reads/writes
+
+**Tier 3 — MEDIUM (4 rules)**
+
+- **R301** — Unbounded Schemas: No size/boundary constraints on parameters (DoS risk)
+- **R302** — Urgency/Authority Language: "immediately", "urgent", "critical"
+- **R303** — Tool Name Impersonation: Homoglyph/typosquat of well-known tools
+- **R304** — Sensitive Parameter Names: Parameters named token/key/secret/password
+
+**Tier 4 — LOW (4 rules)**
+
+- **R401** — Over-long Descriptions: >500 chars may hide injection
+- **R402** — Zero-width Characters: Hidden text attack vectors (U+200B, etc.)
+- **R403** — Missing Annotations: No readOnlyHint/destructiveHint metadata
+- **R404** — Deprecated Schema Keywords: Using $ref (not in MCP spec)
+
+**Tier 5 — INFO (3 rules)**
+
+- **R501** — URLs in Descriptions: Potential tracking/exfiltration channel
+- **R502** — Missing Instructions: Server didn't provide instructions in initialize
+- **R503** — Non-standard Naming: Tool names not following snake_case convention
 
 ## 🧪 Development
 

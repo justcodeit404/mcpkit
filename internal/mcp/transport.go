@@ -1,9 +1,8 @@
-// Package mcp — transport factory.
+// Package mcp — transport utilities.
 package mcp
 
 import (
 	"fmt"
-	"os/exec"
 	"strings"
 )
 
@@ -15,13 +14,4 @@ func ParseCommand(cmdline string) (string, []string, error) {
 		return "", nil, fmt.Errorf("empty command")
 	}
 	return parts[0], parts[1:], nil
-}
-
-// BuildStdioCommand returns an *exec.Cmd for the given command and args.
-func BuildStdioCommand(command string, args []string, env []string) *exec.Cmd {
-	cmd := exec.Command(command, args...)
-	if len(env) > 0 {
-		cmd.Env = append(cmd.Environ(), env...)
-	}
-	return cmd
 }

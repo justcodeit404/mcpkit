@@ -51,7 +51,7 @@ mcpkit bench --command "./my-server" --method ping -n 1000
 |------|------|
 | `mcpkit probe` | 交互式 REPL，探索 MCP 服务器 |
 | `mcpkit test` | 协议合规测试（20 项检查） |
-| `mcpkit scan` | 安全漏洞扫描（10 条规则，2 个等级） |
+| `mcpkit scan` | 安全漏洞扫描（21 条规则，5 个等级） |
 | `mcpkit bench` | 性能基准测试（含百分位统计） |
 | `mcpkit fuzz` | 协议模糊测试（v0.3.0 开发中） |
 | `mcpkit new` | 脚手架生成新 MCP 服务器（v0.2.0 开发中） |
@@ -122,6 +122,26 @@ sudo mv mcpkit /usr/local/bin/
 - **R203** — Base64 编码负载：接受编码内容但无最大长度限制
 - **R204** — 缺少输入验证：参数无 JSON Schema 约束
 - **R205** — 广泛文件系统访问：任意路径读写无沙箱限制
+
+**Tier 3 — 中危（4 条规则）**
+
+- **R301** — 无界 Schema：参数无大小/边界约束（DoS 风险）
+- **R302** — 紧迫/权威语言："immediately"、"urgent"、"critical"
+- **R303** — 工具名仿冒：与知名工具名称相似（拼写错误/同形字）
+- **R304** — 敏感参数名：参数名为 token/key/secret/password
+
+**Tier 4 — 低危（4 条规则）**
+
+- **R401** — 超长描述：>500 字符可能隐藏注入
+- **R402** — 零宽字符：隐藏文本攻击向量（U+200B 等）
+- **R403** — 缺少 Annotations：无 readOnlyHint/destructiveHint 元数据
+- **R404** — 废弃 Schema 关键字：使用 $ref（不在 MCP 规范中）
+
+**Tier 5 — 信息（3 条规则）**
+
+- **R501** — 描述中的 URL：潜在的跟踪/数据外泄通道
+- **R502** — 缺少 Instructions：服务器未在 initialize 中提供使用说明
+- **R503** — 非标准命名：工具名未遵循 snake_case 规范
 
 ## 🧪 开发
 

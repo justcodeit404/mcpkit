@@ -22,21 +22,22 @@ Inside the REPL, try:
   info                        # show server info
   ping                        # health check
   raw {jsonrpc message}       # send raw JSON-RPC
-  history                     # show JSON-RPC message log
+  history [N]                 # show last N JSON-RPC messages (default 20)
+  stats                       # show session statistics
+  export <file>               # export session transcript to file
+  clear                       # clear the screen
   help                        # show all commands
   exit                        # quit the REPL`,
 	RunE: runProbe,
 }
 
 func init() {
-	probeCmd.Flags().Bool("no-color", false, "Disable colors in the REPL")
 	probeCmd.Flags().Bool("raw", false, "Show raw JSON-RPC messages")
 	probeCmd.Flags().String("history-file", "", "Path to save command history (default ~/.mcpkit_history)")
 }
 
 func runProbe(cmd *cobra.Command, _ []string) error {
 	flags := bindSharedFlags(cmd)
-	noColor := getBool(cmd.Flags(), "no-color")
 	raw := getBool(cmd.Flags(), "raw")
 	historyFile := getString(cmd.Flags(), "history-file")
 
@@ -49,7 +50,7 @@ func runProbe(cmd *cobra.Command, _ []string) error {
 
 	repl := probe.NewREPL(probe.Options{
 		Client:      client,
-		NoColor:     noColor,
+		NoColor:     flags.NoColor,
 		ShowRaw:     raw,
 		HistoryFile: historyFile,
 	})

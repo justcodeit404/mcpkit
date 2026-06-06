@@ -174,6 +174,7 @@ type TestResultRenderable struct {
 	DurMS   int64
 }
 
+// CheckResult is a single compliance check result for rendering.
 type CheckResult struct {
 	ID       string
 	Name     string
@@ -182,6 +183,7 @@ type CheckResult struct {
 	Duration string
 }
 
+// TestSummary aggregates pass/fail/skip counts from a test run.
 type TestSummary struct {
 	Total   int
 	Passed  int
@@ -196,6 +198,7 @@ type ScanResultRenderable struct {
 	Summary  ScanSummary
 }
 
+// FindingResult is a single security finding for rendering.
 type FindingResult struct {
 	RuleID      string
 	RuleName    string
@@ -205,6 +208,7 @@ type FindingResult struct {
 	Remediation string
 }
 
+// ScanSummary aggregates finding counts by severity tier.
 type ScanSummary struct {
 	Total    int
 	Critical int
@@ -222,6 +226,7 @@ type BenchResultRenderable struct {
 	Histogram []HistogramBucket
 }
 
+// BenchMetrics holds computed latency and throughput statistics.
 type BenchMetrics struct {
 	Iterations int
 	Errors     int
@@ -238,6 +243,7 @@ type BenchMetrics struct {
 	TotalDur   string
 }
 
+// HistogramBucket is a single bucket in a latency histogram.
 type HistogramBucket struct {
 	From  string
 	To    string
