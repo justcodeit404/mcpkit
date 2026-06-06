@@ -216,9 +216,9 @@ type ScanSummary struct {
 
 // BenchResultRenderable is a typed bench result for the text formatter.
 type BenchResultRenderable struct {
-	Server   string
-	Method   string
-	Metrics  BenchMetrics
+	Server    string
+	Method    string
+	Metrics   BenchMetrics
 	Histogram []HistogramBucket
 }
 
@@ -239,8 +239,8 @@ type BenchMetrics struct {
 }
 
 type HistogramBucket struct {
-	From string
-	To   string
+	From  string
+	To    string
 	Count int
 }
 

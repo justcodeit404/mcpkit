@@ -14,9 +14,9 @@ type baseRule struct {
 	remediation string
 }
 
-func (b *baseRule) ID() string         { return b.id }
-func (b *baseRule) Name() string       { return b.name }
-func (b *baseRule) Severity() Severity { return b.severity }
+func (b *baseRule) ID() string          { return b.id }
+func (b *baseRule) Name() string        { return b.name }
+func (b *baseRule) Severity() Severity  { return b.severity }
 func (b *baseRule) Description() string { return b.description }
 func (b *baseRule) Remediation() string { return b.remediation }
 
@@ -24,7 +24,7 @@ func (b *baseRule) Remediation() string { return b.remediation }
 // primitives alongside user-controlled input channels.
 type CommandInjectionRule struct{ baseRule }
 
-func (r *CommandInjectionRule) ID() string  { return "R101" }
+func (r *CommandInjectionRule) ID() string   { return "R101" }
 func (r *CommandInjectionRule) Name() string { return "Command Injection" }
 func (r *CommandInjectionRule) Severity() Severity {
 	return SeverityCritical
@@ -61,7 +61,7 @@ func (r *CommandInjectionRule) Check(snap *Snapshot) []Finding {
 // that could override agent behavior.
 type SystemPromptOverrideRule struct{ baseRule }
 
-func (r *SystemPromptOverrideRule) ID() string  { return "R102" }
+func (r *SystemPromptOverrideRule) ID() string   { return "R102" }
 func (r *SystemPromptOverrideRule) Name() string { return "System Prompt Override" }
 func (r *SystemPromptOverrideRule) Severity() Severity {
 	return SeverityCritical
@@ -108,7 +108,7 @@ func (r *SystemPromptOverrideRule) Check(snap *Snapshot) []Finding {
 // sensitive data flow.
 type CredentialExfilRule struct{ baseRule }
 
-func (r *CredentialExfilRule) ID() string  { return "R103" }
+func (r *CredentialExfilRule) ID() string   { return "R103" }
 func (r *CredentialExfilRule) Name() string { return "Credential Exfiltration" }
 func (r *CredentialExfilRule) Severity() Severity {
 	return SeverityCritical
@@ -144,7 +144,7 @@ func (r *CredentialExfilRule) Check(snap *Snapshot) []Finding {
 // R104: Shell Metacharacters in Defaults.
 type ShellMetacharDefaultsRule struct{ baseRule }
 
-func (r *ShellMetacharDefaultsRule) ID() string  { return "R104" }
+func (r *ShellMetacharDefaultsRule) ID() string   { return "R104" }
 func (r *ShellMetacharDefaultsRule) Name() string { return "Shell Metacharacters in Defaults" }
 func (r *ShellMetacharDefaultsRule) Severity() Severity {
 	return SeverityCritical
@@ -185,7 +185,7 @@ func (r *ShellMetacharDefaultsRule) Check(snap *Snapshot) []Finding {
 // without a sanitization hint.
 type UnsanitizedExecRule struct{ baseRule }
 
-func (r *UnsanitizedExecRule) ID() string  { return "R105" }
+func (r *UnsanitizedExecRule) ID() string   { return "R105" }
 func (r *UnsanitizedExecRule) Name() string { return "Unsanitized Code Execution" }
 func (r *UnsanitizedExecRule) Severity() Severity {
 	return SeverityCritical

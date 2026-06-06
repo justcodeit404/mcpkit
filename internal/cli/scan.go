@@ -67,11 +67,11 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	}
 
 	engine := scanner.New(scanner.Options{
-		MinTier:          tier,
-		Include:          include,
-		Exclude:          exclude,
-		Offline:          offline,
-		ShowRemediation:  showRemediation,
+		MinTier:         tier,
+		Include:         include,
+		Exclude:         exclude,
+		Offline:         offline,
+		ShowRemediation: showRemediation,
 	})
 
 	results, err := engine.Run(ctx, client)

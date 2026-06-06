@@ -41,7 +41,7 @@ func Histogram(samples []time.Duration, edges []time.Duration) []Bucket {
 			buckets[i] = Bucket{From: sortEdges[i-1], To: e}
 		}
 	}
-	buckets[len(sortEdges)] = Bucket{From: sortEdges[len(sortEdges)-1], To: time.Duration(1<<62)}
+	buckets[len(sortEdges)] = Bucket{From: sortEdges[len(sortEdges)-1], To: time.Duration(1 << 62)}
 
 	for _, s := range samples {
 		for i := range buckets {

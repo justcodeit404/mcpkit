@@ -27,10 +27,10 @@ type Results struct {
 
 // Spec orchestrates spec compliance testing.
 type Spec struct {
-	methodFilter    string
-	toolFilter      string
-	resourceFilter  string
-	promptFilter    string
+	methodFilter   string
+	toolFilter     string
+	resourceFilter string
+	promptFilter   string
 }
 
 // NewSpec returns a fresh Spec.
@@ -101,9 +101,9 @@ func (s *Spec) shouldRun(method string) bool {
 	return s.methodFilter == "" || s.methodFilter == method
 }
 
-func (r *Results) Checks() []output.CheckResult            { return r.checks }
-func (r *Results) Summary() output.TestSummary             { return r.summary }
-func (r *Results) Renderable() []output.CheckResult        { return r.checks }
+func (r *Results) Checks() []output.CheckResult     { return r.checks }
+func (r *Results) Summary() output.TestSummary      { return r.summary }
+func (r *Results) Renderable() []output.CheckResult { return r.checks }
 
 // Raw returns a JSON-serializable representation.
 func (r *Results) Raw() any {

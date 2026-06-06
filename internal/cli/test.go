@@ -96,9 +96,9 @@ func runTest(cmd *cobra.Command, _ []string) error {
 	}
 
 	results, durMS, err := spec.Run(ctx, client, validator.RunOptions{
-		ToolArgs:     toolArgsMap,
-		PromptArgs:   promptArgsMap,
-		FailFast:     failFast,
+		ToolArgs:   toolArgsMap,
+		PromptArgs: promptArgsMap,
+		FailFast:   failFast,
 	})
 	if err != nil {
 		return err

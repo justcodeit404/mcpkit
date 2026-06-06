@@ -9,7 +9,7 @@ import (
 // R201: Imperative Language — descriptions that pressure the agent.
 type ImperativeLanguageRule struct{ baseRule }
 
-func (r *ImperativeLanguageRule) ID() string  { return "R201" }
+func (r *ImperativeLanguageRule) ID() string   { return "R201" }
 func (r *ImperativeLanguageRule) Name() string { return "Imperative Language in Description" }
 func (r *ImperativeLanguageRule) Severity() Severity {
 	return SeverityHigh
@@ -44,7 +44,7 @@ func (r *ImperativeLanguageRule) Check(snap *Snapshot) []Finding {
 // R202: Tool Name Shadowing — names that collide with common system commands.
 type ToolNameShadowingRule struct{ baseRule }
 
-func (r *ToolNameShadowingRule) ID() string  { return "R202" }
+func (r *ToolNameShadowingRule) ID() string   { return "R202" }
 func (r *ToolNameShadowingRule) Name() string { return "Tool Name Shadowing" }
 func (r *ToolNameShadowingRule) Severity() Severity {
 	return SeverityHigh
@@ -84,7 +84,7 @@ func (r *ToolNameShadowingRule) Check(snap *Snapshot) []Finding {
 // with no max size.
 type Base64PayloadRule struct{ baseRule }
 
-func (r *Base64PayloadRule) ID() string  { return "R203" }
+func (r *Base64PayloadRule) ID() string   { return "R203" }
 func (r *Base64PayloadRule) Name() string { return "Base64/Encoded Payload Parameter" }
 func (r *Base64PayloadRule) Severity() Severity {
 	return SeverityHigh
@@ -120,7 +120,7 @@ func (r *Base64PayloadRule) Check(snap *Snapshot) []Finding {
 // R204: Missing Input Validation — string/number parameters lack constraints.
 type MissingInputValidationRule struct{ baseRule }
 
-func (r *MissingInputValidationRule) ID() string  { return "R204" }
+func (r *MissingInputValidationRule) ID() string   { return "R204" }
 func (r *MissingInputValidationRule) Name() string { return "Missing Input Validation" }
 func (r *MissingInputValidationRule) Severity() Severity {
 	return SeverityHigh
@@ -158,7 +158,7 @@ func (r *MissingInputValidationRule) Check(snap *Snapshot) []Finding {
 // R205: Broad File System Access — tool reads/writes arbitrary paths.
 type BroadFileSystemAccessRule struct{ baseRule }
 
-func (r *BroadFileSystemAccessRule) ID() string  { return "R205" }
+func (r *BroadFileSystemAccessRule) ID() string   { return "R205" }
 func (r *BroadFileSystemAccessRule) Name() string { return "Broad File System Access" }
 func (r *BroadFileSystemAccessRule) Severity() Severity {
 	return SeverityHigh

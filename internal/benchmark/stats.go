@@ -9,19 +9,19 @@ import (
 
 // Stats is a set of latency samples with computed statistics.
 type Stats struct {
-	Samples  []time.Duration
-	Min      time.Duration
-	Max      time.Duration
-	Mean     time.Duration
-	Median   time.Duration
-	P75      time.Duration
-	P90      time.Duration
-	P95      time.Duration
-	P99      time.Duration
-	Stddev   time.Duration
+	Samples    []time.Duration
+	Min        time.Duration
+	Max        time.Duration
+	Mean       time.Duration
+	Median     time.Duration
+	P75        time.Duration
+	P90        time.Duration
+	P95        time.Duration
+	P99        time.Duration
+	Stddev     time.Duration
 	Throughput float64 // requests/second
-	Total    time.Duration
-	Errors   int
+	Total      time.Duration
+	Errors     int
 }
 
 // Compute returns summary statistics for a set of latency samples.
