@@ -1,11 +1,9 @@
 package cli
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/justcodeit404/mcpkit/internal/mcp"
 	"github.com/justcodeit404/mcpkit/internal/output"
@@ -47,30 +45,12 @@ func runTest(cmd *cobra.Command, _ []string) error {
 	promptArgs := getString(cmd.Flags(), "prompt-args")
 	failFast := getBool(cmd.Flags(), "fail-fast")
 
-	// Build client config from flags.
-	command, args, err := mcp.ParseCommand(flags.Command)
-	if err != nil && flags.URL == "" {
-		return fmt.Errorf("--command or --url is required: %w", err)
+	client, ctx, cancel, err := connectClient(flags)
+	if err != nil {
+		return err
 	}
-
-	cfg := mcp.Config{
-		Transport:       flags.Transport,
-		URL:             flags.URL,
-		Command:         command,
-		Args:            args,
-		Headers:         parseHeaders(flags.Headers),
-		ProtocolVersion: flags.ProtocolVersion,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), parseDuration(flags.Timeout))
 	defer cancel()
-
-	client := mcp.NewClient(cfg)
 	defer client.Disconnect()
-
-	if err := client.Connect(ctx); err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
 
 	spec := validator.NewSpec()
 	if method != "" {
@@ -104,14 +84,11 @@ func runTest(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// Render.
-	formatter := pickFormatter(flags.Output, flags.NoColor)
 	if flags.Output == "json" {
-		return formatter.Format(os.Stdout, results.Raw())
+		return output.NewJSONFormatter().Format(os.Stdout, results.Raw())
 	}
 
-	ren := output.NewTextFormatter()
-	return ren.Format(os.Stdout, output.TestResultRenderable{
+	return output.NewTextFormatter().Format(os.Stdout, output.TestResultRenderable{
 		Server:  serverName(client),
 		Checks:  results.Renderable(),
 		Summary: results.Summary(),
@@ -124,36 +101,4 @@ func serverName(c *mcp.Client) string {
 		return fmt.Sprintf("%s@%s", r.ServerInfo.Name, r.ServerInfo.Version)
 	}
 	return "unknown"
-}
-
-func parseHeaders(raw []string) map[string]string {
-	m := map[string]string{}
-	for _, h := range raw {
-		for i, c := range h {
-			if c == ':' {
-				m[h[:i]] = h[i+1:]
-				break
-			}
-		}
-	}
-	return m
-}
-
-func parseDuration(s string) time.Duration {
-	d, err := time.ParseDuration(s)
-	if err != nil {
-		return 30 * time.Second
-	}
-	return d
-}
-
-func pickFormatter(name string, noColor bool) output.Formatter {
-	switch name {
-	case "json":
-		return output.NewJSONFormatter()
-	default:
-		f := output.NewTextFormatter()
-		f.NoColor = noColor
-		return f
-	}
 }

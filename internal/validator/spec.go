@@ -3,7 +3,6 @@ package validator
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 	"time"
 
@@ -120,20 +119,8 @@ func (r *Results) record(id, name, status, msg string, dur time.Duration) {
 		Name:     name,
 		Status:   status,
 		Message:  msg,
-		Duration: formatDuration(dur),
+		Duration: output.FormatDuration(dur),
 	})
-}
-
-// formatDuration renders a duration as a compact human-readable string.
-func formatDuration(d time.Duration) string {
-	switch {
-	case d < time.Millisecond:
-		return fmt.Sprintf("%dµs", d.Microseconds())
-	case d < time.Second:
-		return fmt.Sprintf("%.1fms", float64(d.Microseconds())/1000.0)
-	default:
-		return fmt.Sprintf("%.2fs", d.Seconds())
-	}
 }
 
 // toolNamePattern is the MCP spec rule for tool names:

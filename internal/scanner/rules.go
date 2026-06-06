@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -202,6 +203,182 @@ func (r *BroadFileSystemAccessRule) Check(snap *Snapshot) []Finding {
 		text := t.Name + " " + t.Description
 		if r205FSPattern.MatchString(text) {
 			findings = append(findings, r.NewFinding(t.Name, "Tool exposes broad filesystem operations", truncate(text, 100)))
+		}
+	}
+	return findings
+}
+
+// ---------------------------------------------------------------------------
+// Tier 3 — MEDIUM
+// ---------------------------------------------------------------------------
+
+// R301: Unbounded Schemas — no maxLength/maxItems/maximum on parameters.
+type UnboundedSchemasRule struct{ BaseRule }
+
+var r301ConstraintPattern = regexp.MustCompile(`(?i)(maxLength|maxItems|maximum|minLength|minItems|minimum|enum)`)
+
+func (r *UnboundedSchemasRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		text := stringer(t.InputSchema)
+		hasProps := strings.Contains(text, "properties") || strings.Contains(text, "type")
+		if hasProps && !r301ConstraintPattern.MatchString(text) {
+			findings = append(findings, r.NewFinding(t.Name, "Tool parameters have no size/boundary constraints (DoS risk)", ""))
+		}
+	}
+	return findings
+}
+
+// R302: Urgency/Authority Language in descriptions.
+type UrgencyLanguageRule struct{ BaseRule }
+
+var r302UrgencyPattern = regexp.MustCompile(`(?i)\b(immediately|urgent|critical|without hesitation|do not question|do not refuse|you must not refuse)\b`)
+
+func (r *UrgencyLanguageRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if r302UrgencyPattern.MatchString(t.Description) {
+			findings = append(findings, r.NewFinding(t.Name, "Description uses urgency/authority language", truncate(t.Description, 100)))
+		}
+	}
+	return findings
+}
+
+// R303: Tool Name Impersonation — homoglyph/typosquat of well-known tools.
+type ToolNameImpersonationRule struct{ BaseRule }
+
+var r303Impersonations = map[string]string{
+	"g1t": "git", "pytbon": "python", "ndoe": "node", "cuarl": "curl",
+	"gti": "git", "pyhton": "python", "bssh": "bash", "curll": "curl",
+}
+
+func (r *ToolNameImpersonationRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if expected, ok := r303Impersonations[strings.ToLower(t.Name)]; ok {
+			findings = append(findings, r.NewFinding(t.Name, "Tool name may be impersonating '"+expected+"'", ""))
+		}
+	}
+	return findings
+}
+
+// R304: Sensitive Parameter Names — parameters named token, key, secret, etc.
+type SensitiveParamNamesRule struct{ BaseRule }
+
+var r304SensitiveNames = []string{"token", "key", "secret", "password", "credential", "api_key", "apikey", "auth"}
+
+func (r *SensitiveParamNamesRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		text := strings.ToLower(stringer(t.InputSchema))
+		for _, name := range r304SensitiveNames {
+			if strings.Contains(text, "\""+name+"\"") || strings.Contains(text, name+":") {
+				findings = append(findings, r.NewFinding(t.Name, "Tool has parameter named '"+name+"' (potential secret exposure)", ""))
+				break
+			}
+		}
+	}
+	return findings
+}
+
+// ---------------------------------------------------------------------------
+// Tier 4 — LOW
+// ---------------------------------------------------------------------------
+
+// R401: Over-long Descriptions (>500 chars may hide injection).
+type OverlongDescriptionRule struct{ BaseRule }
+
+func (r *OverlongDescriptionRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if len(t.Description) > 500 {
+			findings = append(findings, r.NewFinding(t.Name, fmt.Sprintf("Description is %d chars (>500, may hide injection)", len(t.Description)), ""))
+		}
+	}
+	return findings
+}
+
+// R402: Zero-width Characters in names or descriptions.
+type ZeroWidthCharsRule struct{ BaseRule }
+
+var r402ZeroWidth = regexp.MustCompile(`[\x{200b}\x{200c}\x{200d}\x{feff}]`)
+
+func (r *ZeroWidthCharsRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if r402ZeroWidth.MatchString(t.Name) || r402ZeroWidth.MatchString(t.Description) {
+			findings = append(findings, r.NewFinding(t.Name, "Tool name or description contains zero-width characters (hidden text attack)", ""))
+		}
+	}
+	return findings
+}
+
+// R403: Missing Annotations — no annotations field on tool definition.
+type MissingAnnotationsRule struct{ BaseRule }
+
+func (r *MissingAnnotationsRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if t.Annotations == nil {
+			findings = append(findings, r.NewFinding(t.Name, "Tool has no annotations (missing readOnlyHint/destructiveHint)", ""))
+		}
+	}
+	return findings
+}
+
+// R404: Deprecated Schema Keywords — using $ref.
+type DeprecatedSchemaKeywordsRule struct{ BaseRule }
+
+func (r *DeprecatedSchemaKeywordsRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		text := stringer(t.InputSchema)
+		if strings.Contains(text, "$ref") {
+			findings = append(findings, r.NewFinding(t.Name, "Tool inputSchema uses $ref (not supported by MCP spec)", ""))
+		}
+	}
+	return findings
+}
+
+// ---------------------------------------------------------------------------
+// Tier 5 — INFO
+// ---------------------------------------------------------------------------
+
+// R501: URLs in Descriptions — potential tracking/exfiltration channel.
+type URLsInDescriptionsRule struct{ BaseRule }
+
+var r501URLPattern = regexp.MustCompile(`https?://`)
+
+func (r *URLsInDescriptionsRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if r501URLPattern.MatchString(t.Description) {
+			findings = append(findings, r.NewFinding(t.Name, "Description contains URL (potential tracking channel)", ""))
+		}
+	}
+	return findings
+}
+
+// R502: Missing Instructions — initialize response has no instructions field.
+type MissingInstructionsRule struct{ BaseRule }
+
+func (r *MissingInstructionsRule) Check(snap *Snapshot) []Finding {
+	if snap.ServerInfo != nil && snap.Instructions == "" {
+		return []Finding{r.NewFinding("(server)", "Server did not provide instructions in initialize response", "")}
+	}
+	return nil
+}
+
+// R503: Non-standard Tool Naming — not following snake_case convention.
+type NonStandardNamingRule struct{ BaseRule }
+
+var r503SnakeCase = regexp.MustCompile(`^[a-z][a-z0-9]*(_[a-z0-9]+)*$`)
+
+func (r *NonStandardNamingRule) Check(snap *Snapshot) []Finding {
+	var findings []Finding
+	for _, t := range snap.Tools {
+		if !r503SnakeCase.MatchString(t.Name) {
+			findings = append(findings, r.NewFinding(t.Name, "Tool name '"+t.Name+"' does not follow snake_case convention", ""))
 		}
 	}
 	return findings

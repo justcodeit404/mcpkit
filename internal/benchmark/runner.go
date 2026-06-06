@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/justcodeit404/mcpkit/internal/mcp"
@@ -79,20 +81,49 @@ func (r *Runner) Run(ctx context.Context, cfg mcp.Config) (*Results, error) {
 	}
 
 	// Measured run.
-	samples := make([]time.Duration, 0, r.opts.Iterations)
-	errs := 0
+	concurrency := r.opts.Concurrency
+	if concurrency < 1 {
+		concurrency = 1
+	}
+
+	var (
+		mu      sync.Mutex
+		samples []time.Duration
+		errs    int64
+		wg      sync.WaitGroup
+		sem     = make(chan struct{}, concurrency)
+	)
+
 	start := time.Now()
 	for i := 0; i < r.opts.Iterations; i++ {
-		t, err := r.invokeOnceTimed(ctx, client)
-		if err != nil {
-			errs++
-			continue
-		}
-		samples = append(samples, t)
+		wg.Add(1)
+		sem <- struct{}{}
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			// Each goroutine creates its own client for true concurrency.
+			c := mcp.NewClient(cfg)
+			if err := c.Connect(ctx); err != nil {
+				atomic.AddInt64(&errs, 1)
+				return
+			}
+			defer c.Disconnect()
+
+			d, err := r.invokeOnceTimed(ctx, c)
+			if err != nil {
+				atomic.AddInt64(&errs, 1)
+				return
+			}
+			mu.Lock()
+			samples = append(samples, d)
+			mu.Unlock()
+		}()
 	}
+	wg.Wait()
 	total := time.Since(start)
 
-	stats := Compute(samples, total, errs)
+	stats := Compute(samples, total, int(atomic.LoadInt64(&errs)))
 	hist := Histogram(samples, edges)
 
 	return &Results{
@@ -148,17 +179,17 @@ func (r *Results) Metrics() output.BenchMetrics {
 	return output.BenchMetrics{
 		Iterations: r.Stats.iterations(),
 		Errors:     r.Stats.Errors,
-		Min:        FormatDuration(r.Stats.Min),
-		Max:        FormatDuration(r.Stats.Max),
-		Mean:       FormatDuration(r.Stats.Mean),
-		Median:     FormatDuration(r.Stats.Median),
-		P75:        FormatDuration(r.Stats.P75),
-		P90:        FormatDuration(r.Stats.P90),
-		P95:        FormatDuration(r.Stats.P95),
-		P99:        FormatDuration(r.Stats.P99),
-		Stddev:     FormatDuration(r.Stats.Stddev),
+		Min:        output.FormatDuration(r.Stats.Min),
+		Max:        output.FormatDuration(r.Stats.Max),
+		Mean:       output.FormatDuration(r.Stats.Mean),
+		Median:     output.FormatDuration(r.Stats.Median),
+		P75:        output.FormatDuration(r.Stats.P75),
+		P90:        output.FormatDuration(r.Stats.P90),
+		P95:        output.FormatDuration(r.Stats.P95),
+		P99:        output.FormatDuration(r.Stats.P99),
+		Stddev:     output.FormatDuration(r.Stats.Stddev),
 		Throughput: fmt.Sprintf("%.1f req/s", r.Stats.Throughput),
-		TotalDur:   FormatDuration(r.Stats.Total),
+		TotalDur:   output.FormatDuration(r.Stats.Total),
 	}
 }
 
@@ -167,8 +198,8 @@ func (r *Results) HistogramBuckets() []output.HistogramBucket {
 	out := make([]output.HistogramBucket, len(r.Histogram))
 	for i, b := range r.Histogram {
 		out[i] = output.HistogramBucket{
-			From:  FormatDuration(b.From),
-			To:    FormatDuration(b.To),
+			From:  output.FormatDuration(b.From),
+			To:    output.FormatDuration(b.To),
 			Count: b.Count,
 		}
 	}

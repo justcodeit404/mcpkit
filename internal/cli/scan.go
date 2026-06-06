@@ -1,11 +1,9 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"os"
 
-	"github.com/justcodeit404/mcpkit/internal/mcp"
 	"github.com/justcodeit404/mcpkit/internal/output"
 	"github.com/justcodeit404/mcpkit/internal/scanner"
 	"github.com/spf13/cobra"
@@ -42,29 +40,12 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	offline := getBool(cmd.Flags(), "offline")
 	showRemediation := getBool(cmd.Flags(), "show-remediation")
 
-	command, args, err := mcp.ParseCommand(flags.Command)
-	if err != nil && flags.URL == "" {
-		return fmt.Errorf("--command or --url is required: %w", err)
+	client, ctx, cancel, err := connectClient(flags)
+	if err != nil {
+		return err
 	}
-
-	cfg := mcp.Config{
-		Transport:       flags.Transport,
-		URL:             flags.URL,
-		Command:         command,
-		Args:            args,
-		Headers:         parseHeaders(flags.Headers),
-		ProtocolVersion: flags.ProtocolVersion,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), parseDuration(flags.Timeout))
 	defer cancel()
-
-	client := mcp.NewClient(cfg)
 	defer client.Disconnect()
-
-	if err := client.Connect(ctx); err != nil {
-		return fmt.Errorf("connect: %w", err)
-	}
 
 	engine := scanner.New(scanner.Options{
 		MinTier:         tier,
@@ -93,7 +74,6 @@ func runScan(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// Determine exit code based on --fail-on.
 	if failOn != "never" && results.ShouldFail(failOn) {
 		return fmt.Errorf("security findings above %s threshold", failOn)
 	}

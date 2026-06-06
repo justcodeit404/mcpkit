@@ -12,6 +12,9 @@ import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+// ClientVersion is the version reported to MCP servers. Set via ldflags at build time.
+var ClientVersion = "dev"
+
 // Client is a thin wrapper around the go-sdk client. It tracks a single
 // session and the raw JSON-RPC traffic that has flowed through it.
 type Client struct {
@@ -78,7 +81,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	client := mcpsdk.NewClient(
 		&mcpsdk.Implementation{
 			Name:    "mcpkit",
-			Version: "0.1.0",
+			Version: ClientVersion,
 		},
 		&mcpsdk.ClientOptions{},
 	)

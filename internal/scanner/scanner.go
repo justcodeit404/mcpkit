@@ -12,10 +12,11 @@ import (
 
 // Snapshot is a server snapshot captured for static analysis.
 type Snapshot struct {
-	ServerInfo *mcpsdk.Implementation
-	Tools      []*mcpsdk.Tool
-	Resources  []*mcpsdk.Resource
-	Prompts    []*mcpsdk.Prompt
+	ServerInfo   *mcpsdk.Implementation
+	Instructions string
+	Tools        []*mcpsdk.Tool
+	Resources    []*mcpsdk.Resource
+	Prompts      []*mcpsdk.Prompt
 }
 
 // Options configures a scanner run.
@@ -75,6 +76,42 @@ func New(opts Options) *Engine {
 			&BroadFileSystemAccessRule{ruleMeta("R205", "Broad File System Access", SeverityHigh,
 				"Tool reads/writes arbitrary filesystem paths without sandboxing",
 				"Restrict tools to a sandboxed root directory. Reject paths containing '..' or absolute paths outside the root.")},
+			// Tier 3 — MEDIUM
+			&UnboundedSchemasRule{ruleMeta("R301", "Unbounded Schemas", SeverityMedium,
+				"Tool parameters have no size/boundary constraints (DoS risk)",
+				"Add maxLength, maxItems, maximum, minLength, minimum constraints to all parameters.")},
+			&UrgencyLanguageRule{ruleMeta("R302", "Urgency/Authority Language", SeverityMedium,
+				"Description uses urgency/authority language to pressure the agent",
+				"Rewrite descriptions as factual. Avoid 'immediately', 'urgent', 'critical', 'do not question'.")},
+			&ToolNameImpersonationRule{ruleMeta("R303", "Tool Name Impersonation", SeverityMedium,
+				"Tool name may be a homoglyph/typosquat of a well-known tool",
+				"Use clear, unambiguous tool names that cannot be confused with system commands.")},
+			&SensitiveParamNamesRule{ruleMeta("R304", "Sensitive Parameter Names", SeverityMedium,
+				"Tool has parameters named token/key/secret/password (potential secret exposure)",
+				"Avoid exposing sensitive parameters. Use secure credential injection instead.")},
+			// Tier 4 — LOW
+			&OverlongDescriptionRule{ruleMeta("R401", "Over-long Descriptions", SeverityLow,
+				"Description exceeds 500 characters (may hide injection after visible portion)",
+				"Keep descriptions concise. Split long descriptions into separate documentation.")},
+			&ZeroWidthCharsRule{ruleMeta("R402", "Zero-width Characters", SeverityLow,
+				"Tool name or description contains zero-width characters (hidden text attack vector)",
+				"Remove zero-width characters (U+200B, U+200C, U+200D, U+FEFF) from names and descriptions.")},
+			&MissingAnnotationsRule{ruleMeta("R403", "Missing Annotations", SeverityLow,
+				"Tool has no annotations (missing readOnlyHint/destructiveHint metadata)",
+				"Add annotations to tools to help agents understand read-only vs destructive operations.")},
+			&DeprecatedSchemaKeywordsRule{ruleMeta("R404", "Deprecated Schema Keywords", SeverityLow,
+				"Tool inputSchema uses $ref (not supported by MCP spec)",
+				"Inline schema definitions instead of using $ref references.")},
+			// Tier 5 — INFO
+			&URLsInDescriptionsRule{ruleMeta("R501", "URLs in Descriptions", SeverityInfo,
+				"Description contains URL (potential tracking/exfiltration channel)",
+				"Consider whether URLs in tool descriptions could be used for tracking.")},
+			&MissingInstructionsRule{ruleMeta("R502", "Missing Instructions", SeverityInfo,
+				"Server did not provide instructions in initialize response",
+				"Add an 'instructions' field to the initialize response to help agents use the server effectively.")},
+			&NonStandardNamingRule{ruleMeta("R503", "Non-standard Tool Naming", SeverityInfo,
+				"Tool name does not follow snake_case convention",
+				"Use snake_case for tool names (lowercase letters, digits, underscores).")},
 		},
 	}
 }
@@ -94,10 +131,11 @@ func (e *Engine) Run(ctx context.Context, client *mcp.Client) (*Results, error) 
 			return nil, err
 		}
 		snap = &Snapshot{
-			ServerInfo: s.ServerInfo,
-			Tools:      s.Tools,
-			Resources:  s.Resources,
-			Prompts:    s.Prompts,
+			ServerInfo:   s.ServerInfo,
+			Instructions: s.Instructions,
+			Tools:        s.Tools,
+			Resources:    s.Resources,
+			Prompts:      s.Prompts,
 		}
 	} else {
 		snap = &Snapshot{}

@@ -26,6 +26,7 @@ builds:
       - -X github.com/justcodeit404/mcpkit/internal/cli.Version={{.Version}}
       - -X github.com/justcodeit404/mcpkit/internal/cli.Commit={{.ShortCommit}}
       - -X github.com/justcodeit404/mcpkit/internal/cli.BuildDate={{.Date}}
+      - -X github.com/justcodeit404/mcpkit/internal/mcp.ClientVersion={{.Version}}
 
 archives:
   - id: default

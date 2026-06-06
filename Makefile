@@ -6,7 +6,8 @@ BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 LDFLAGS := -s -w \
   -X github.com/justcodeit404/mcpkit/internal/cli.Version=$(VERSION) \
   -X github.com/justcodeit404/mcpkit/internal/cli.Commit=$(COMMIT) \
-  -X github.com/justcodeit404/mcpkit/internal/cli.BuildDate=$(BUILD_DATE)
+  -X github.com/justcodeit404/mcpkit/internal/cli.BuildDate=$(BUILD_DATE) \
+  -X github.com/justcodeit404/mcpkit/internal/mcp.ClientVersion=$(VERSION)
 
 .PHONY: build install test lint format clean release-snapshot
 

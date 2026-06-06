@@ -1,6 +1,12 @@
 package cli
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/justcodeit404/mcpkit/internal/mcp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -57,4 +63,61 @@ func getStringSlice(flags *pflag.FlagSet, name string) []string {
 func getInt(flags *pflag.FlagSet, name string) int {
 	v, _ := flags.GetInt(name)
 	return v
+}
+
+// connectClient builds an MCP client from shared flags, connects, and returns
+// the client along with a context that auto-cancels on timeout.
+func connectClient(flags sharedFlags) (*mcp.Client, context.Context, context.CancelFunc, error) {
+	command, args, err := mcp.ParseCommand(flags.Command)
+	if err != nil && flags.URL == "" {
+		return nil, nil, nil, fmt.Errorf("--command or --url is required: %w", err)
+	}
+
+	cfg := mcp.Config{
+		Transport:       flags.Transport,
+		URL:             flags.URL,
+		Command:         command,
+		Args:            args,
+		Headers:         parseHeaders(flags.Headers),
+		ProtocolVersion: flags.ProtocolVersion,
+	}
+
+	timeout := 30 * time.Second
+	if d, err := time.ParseDuration(flags.Timeout); err == nil {
+		timeout = d
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+	client := mcp.NewClient(cfg)
+	if err := client.Connect(ctx); err != nil {
+		cancel()
+		return nil, nil, nil, fmt.Errorf("connect: %w", err)
+	}
+	return client, ctx, cancel, nil
+}
+
+// parseHeaders converts a slice of "key:value" strings into a map.
+func parseHeaders(raw []string) map[string]string {
+	m := map[string]string{}
+	for _, h := range raw {
+		for i, c := range h {
+			if c == ':' {
+				m[h[:i]] = h[i+1:]
+				break
+			}
+		}
+	}
+	return m
+}
+
+// parseJSONArgs parses a JSON string into a map. Returns nil if empty.
+func parseJSONArgs(raw string) (map[string]any, error) {
+	if raw == "" || raw == "{}" {
+		return map[string]any{}, nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal([]byte(raw), &m); err != nil {
+		return nil, fmt.Errorf("invalid JSON args: %w", err)
+	}
+	return m, nil
 }

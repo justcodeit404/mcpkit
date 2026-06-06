@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -25,7 +23,7 @@ Examples:
 
 func init() {
 	benchCmd.Flags().IntP("iterations", "n", 100, "Number of iterations")
-	benchCmd.Flags().IntP("concurrency", "C", 1, "Concurrent workers (v0.2.0)")
+	benchCmd.Flags().IntP("concurrency", "C", 1, "Concurrent workers")
 	benchCmd.Flags().IntP("warmup", "w", 10, "Warmup iterations (discarded)")
 	benchCmd.Flags().String("method", "ping", "Method: ping|tools/list|tools/call|resources/list|resources/read|prompts/list|prompts/get")
 	benchCmd.Flags().StringP("tool", "t", "", "Tool name (for --method=tools/call)")
@@ -47,27 +45,17 @@ func runBench(cmd *cobra.Command, _ []string) error {
 	promptName := getString(cmd.Flags(), "prompt")
 	buckets := getStringSlice(cmd.Flags(), "histogram-buckets")
 
-	command, args, err := mcp.ParseCommand(flags.Command)
-	if err != nil && flags.URL == "" {
-		return fmt.Errorf("--command or --url is required: %w", err)
+	toolArgsMap, err := parseJSONArgs(toolArgs)
+	if err != nil {
+		return err
 	}
 
-	var toolArgsMap map[string]any
-	if err := json.Unmarshal([]byte(toolArgs), &toolArgsMap); err != nil {
-		return fmt.Errorf("invalid --tool-args JSON: %w", err)
+	client, ctx, cancel, err := connectClient(flags)
+	if err != nil {
+		return err
 	}
-
-	cfg := mcp.Config{
-		Transport:       flags.Transport,
-		URL:             flags.URL,
-		Command:         command,
-		Args:            args,
-		Headers:         parseHeaders(flags.Headers),
-		ProtocolVersion: flags.ProtocolVersion,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), parseDuration(flags.Timeout))
-	defer cancel()
+	cancel()
+	client.Disconnect() // bench creates its own connections per worker
 
 	runner := benchmark.New(benchmark.Options{
 		Iterations:  iterations,
@@ -81,7 +69,13 @@ func runBench(cmd *cobra.Command, _ []string) error {
 		Buckets:     buckets,
 	})
 
-	results, err := runner.Run(ctx, cfg)
+	results, err := runner.Run(ctx, mcp.Config{
+		Transport:       flags.Transport,
+		URL:             flags.URL,
+		Command:         flags.Command,
+		Headers:         parseHeaders(flags.Headers),
+		ProtocolVersion: flags.ProtocolVersion,
+	})
 	if err != nil {
 		return err
 	}
@@ -93,7 +87,7 @@ func runBench(cmd *cobra.Command, _ []string) error {
 	ren := output.NewTextFormatter()
 	ren.NoColor = flags.NoColor
 	return ren.Format(os.Stdout, output.BenchResultRenderable{
-		Server:    fmt.Sprintf("%s (method=%s)", command, method),
+		Server:    fmt.Sprintf("%s (method=%s)", flags.Command, method),
 		Method:    method,
 		Metrics:   results.Metrics(),
 		Histogram: results.HistogramBuckets(),
