@@ -29,35 +29,12 @@ builds:
 
 archives:
   - id: default
-    formats: [tar.gz]
+    formats:
+      - tar.gz
     name_template: "{{ .BinaryName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
-
-nfpms:
-  - id: packages
-    package_name: mcpkit
-    file_name_template: "{{ .ConventionalFileName }}"
-    formats:
-      - deb
-      - rpm
-      - apk
-    maintainer: mcpkit <hello@mcpkit.dev>
-    description: The Swiss Army knife for MCP development
-    license: MIT
-    section: utils
-    priority: optional
-
-brews:
-  - tap:
-      owner: justcodeit404
-      name: homebrew-tap
-    homepage: https://github.com/justcodeit404/mcpkit
-    description: The Swiss Army knife for MCP development
-    license: MIT
-    dependencies:
-      - name: git
 
 release:
   github:
